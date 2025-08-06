@@ -1,0 +1,13 @@
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+    margin-bottom: 0;
+}
+.nav-link li{
+  width: 100%;
+  margin-bottom: 0;
+  
+}
