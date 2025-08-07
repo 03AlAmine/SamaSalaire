@@ -7,7 +7,7 @@ import { getStorage } from "firebase/storage";
 
 // Configuration Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBctTjsOKdhBjCTgd-0-uv6mPD_xJylZdE",
+  apiKey: process.env.REACT_APP_API_KEY,
   authDomain: "samasalaire.firebaseapp.com",
   projectId: "samasalaire",
   storageBucket: "samasalaire.firebasestorage.app",
@@ -20,11 +20,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 // eslint-disable-next-line no-unused-vars
 const analytics = getAnalytics(app);
-
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-
-// ✅ Exportation
 export { db, auth, storage, firebaseConfig };
