@@ -210,15 +210,15 @@ const navButtonStyle = {
 };
 
 
-export const ClientChart = ({ clients }) => {
+export const EmployeChart = ({ employees }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 5;
   const intervalRef = useRef(null);
 
   const companies = {};
-  if (Array.isArray(clients)) {
-    clients.forEach(client => {
-      const company = client.nom || 'Non spécifié';
+  if (Array.isArray(employees)) {
+    employees.forEach(employee => {
+      const company = [employee?.nom, employee?.prenom].filter(Boolean).join(' ') || 'Non spécifié';
       companies[company] = (companies[company] || 0) + 1;
     });
   }
@@ -249,7 +249,7 @@ export const ClientChart = ({ clients }) => {
   const data = {
     labels,
     datasets: [{
-      label: 'Nombre de clients',
+      label: 'Nombre d\'employés par ',
       data: values,
       backgroundColor: backgroundColors.slice(0, labels.length),
       borderColor: '#fff',
@@ -339,7 +339,7 @@ export const ClientChart = ({ clients }) => {
             fontSize: '14px',
             color: '#64748b'
           }}>
-            Clients
+            Employés
           </div>
         </div>
       </div>

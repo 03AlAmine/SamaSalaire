@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { FaUsers, FaFileInvoiceDollar, FaPlus, FaBolt, FaUserPlus, FaFileImport } from "react-icons/fa";
-import { InvoiceChart, ClientChart } from "../components/Charts";
+import { InvoiceChart, EmployeChart } from "../components/Charts";
 import { DocumentSliderCard, MonthlyAmountSliderCard, PaymentStatusSliderCard } from '../components/DocumentSliderCard'; // ou directement dans le fichier
 
-const DashboardPage = ({ stats, allFactures, allDevis, allAvoirs, navigate, clients }) => {
+const DashboardPage = ({ stats, allFactures, allDevis, allAvoirs, navigate, employees }) => {
     const [activeSlide, setActiveSlide] = useState("factures");
 
     const getLastThreeItems = (items) => [...items]
@@ -22,12 +22,12 @@ const DashboardPage = ({ stats, allFactures, allDevis, allAvoirs, navigate, clie
 
             <div className="stats-grid">
                 <div className="stat-card">
-                    <div className="stat-icon clients">
+                    <div className="stat-icon employees">
                         <FaUsers />
                     </div>
                     <div className="stat-info">
-                        <h3>{stats.totalClients}</h3>
-                        <p>Clients</p>
+                        <h3>{stats.totalEmployees}</h3>
+                        <p>Employees</p>
                     </div>
                 </div>
                 <DocumentSliderCard stats={stats} />
@@ -44,7 +44,7 @@ const DashboardPage = ({ stats, allFactures, allDevis, allAvoirs, navigate, clie
                 </button>
                 <button onClick={() => navigate("/client/new")} className="quick-action">
                     <FaUserPlus className="action-icon" />
-                    <span>Nouveau Client</span>
+                    <span>Nouveau Employé</span>
                 </button>
                 <button onClick={() => navigate("/import")} className="quick-action">
                     <FaFileImport className="action-icon" />
@@ -60,9 +60,9 @@ const DashboardPage = ({ stats, allFactures, allDevis, allAvoirs, navigate, clie
                 </div>
 
                 <div className="chart-card">
-                    <h3>Répartition des clients</h3>
+                    <h3>Répartition des employees</h3>
                     <div className="chart-container">
-                        <ClientChart clients={clients} />
+                        <EmployeChart employees={employees} />
                     </div>
                 </div>
             </div>

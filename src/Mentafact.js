@@ -3,16 +3,15 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from './auth/AuthContext';
 import { FaBell, FaUserCircle, FaCog, FaSignOutAlt, FaChevronDown, FaCreditCard, FaUser, FaSearch, FaChevronRight } from 'react-icons/fa';
-import { clientService } from "./services/clientService";
+import { employeeService } from "./services/employeeService";
 import { invoiceService } from "./services/invoiceService";
 import { teamService } from "./services/teamService";
 import { getDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
-
 // Import pages and components
 import DashboardPage from "./pages/DashboardPage";
-import ClientsPage from "./pages/ClientsPage";
 import InvoicesPage from "./pages/InvoicesPage";
+import EmployeesPage from "./pages/EmployeePage";
 import StatsPage from "./pages/StatsPage";
 import TeamsPage from "./pages/TeamsPage";
 import Sidebar from "./pages/Sidebare";
@@ -21,7 +20,7 @@ import CompanyNameDisplay from './components/CompanyNameDisplay';
 
 import logo from './assets/Logo_Mf.png';
 import "./css/Mentafact.css";
-import * as XLSX from 'xlsx';
+/*import * as XLSX from 'xlsx'; */
 
 const Mentafact = () => {
     const { currentUser, logout } = useAuth();
@@ -35,23 +34,31 @@ const Mentafact = () => {
     const [activeTab_0, setActiveTab_0] = useState("factures");
     // eslint-disable-next-line no-unused-vars
     const [error, setError] = useState(null);
-    const [importProgress, setImportProgress] = useState(""); // Ajouté pour l'import de clients
+   // const [, setImportProgress] = useState(""); // Ajouté pour l'import de employees
 
-    // States for data
-    const [client, setClient] = useState({ nom: "", adresse: "", email: "", telephone: "", societe: "", type: "client", anciensNoms: [] });
-    const [clients, setClients] = useState([]);
-    const [selectedClient, setSelectedClient] = useState(null);
-    const [editingClient, setEditingClient] = useState(null);
+    const [employee, setEmployee] = useState({
+        nom: "",
+        prenom: "",
+        matricule: "",
+        poste: "",
+        departement: "",
+        dateEmbauche: "",
+        typeContrat: "CDI",
+        salaireBase: 0
+    });
+    const [employees, setEmployees] = useState([]);
+    const [editingEmployee, setEditingEmployee] = useState(null);
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+
     // eslint-disable-next-line no-unused-vars
     const [isEditing, setIsEditing] = useState(false);
-    const [societeInput, setSocieteInput] = useState("");
 
     const [allFactures, setAllFactures] = useState([]);
-    const [clientFactures, setClientFactures] = useState([]);
+    const [employeeFactures, ] = useState([]);
     const [allDevis, setAllDevis] = useState([]);
-    const [clientDevis, setClientDevis] = useState([]);
+    const [employeeDevis, ] = useState([]);
     const [allAvoirs, setAllAvoirs] = useState([]);
-    const [clientAvoirs, setClientAvoirs] = useState([]);
+    const [employeeAvoirs, ] = useState([]);
 
     const [equipe, setEquipe] = useState({ nom: "", description: "", responsable: "" });
     const [equipes, setEquipes] = useState([]);
@@ -60,7 +67,7 @@ const Mentafact = () => {
     const { createSubUser, checkPermission } = useAuth();
 
     const [stats, setStats] = useState({
-        totalClients: 0,
+        totalemployees: 0,
         totalFactures: 0,
         revenusMensuels: 0,
         facturesImpayees: 0,
@@ -103,14 +110,15 @@ const Mentafact = () => {
 
             const unsubscribers = [];
 
-            const clientsUnsub = clientService.getClients(companyId, (clientsData) => {
-                setClients(clientsData);
+            // Dans setupDataSubscriptions, remplacez :
+            const employeesUnsub = employeeService.getEmployees(companyId, (employeesData) => {
+                setEmployees(employeesData);
                 setStats(prev => ({
                     ...prev,
-                    totalClients: clientsData.length
+                    totalEmployees: employeesData.length
                 }));
             });
-            if (typeof clientsUnsub === "function") unsubscribers.push(clientsUnsub);
+            if (typeof employeesUnsub === "function") unsubscribers.push(employeesUnsub);
 
             const invoicesUnsub = invoiceService.getInvoices(companyId, "facture", (invoicesData) => {
                 let filteredFactures = invoicesData;
@@ -201,103 +209,80 @@ const Mentafact = () => {
     }, [currentUser]);
 
 
-    const handleSocieteBlur = () => {
-        const currentName = (editingClient.societe || "").trim();
-        const newName = societeInput.trim();
-        if (!newName || currentName === newName) return;
-
-        const updatedClient = {
-            ...editingClient,
-            societe: newName,
-            anciensNoms: [...(editingClient.anciensNoms || []), { nom: currentName, dateChangement: new Date().toISOString() }]
-        };
-        setEditingClient(updatedClient);
-    };
     // Handlers et fonctions utilitaires...
-    // Handlers clients
-    const handleChange = (e) => setClient({ ...client, [e.target.name]: e.target.value });
-    const handleEditChange = (e) => setEditingClient({ ...editingClient, [e.target.name]: e.target.value });
+    // Handlers employees
+    // Handlers employés
+    const loadEmployeePayrolls = (employeeId) => {
+        const employeeObj = employees.find(e => e.id === employeeId);
+        setSelectedEmployee(employeeObj);
+        // Chargez les bulletins de paie ici
+    };
+    const handleChange = (e) => setEmployee({ ...employee, [e.target.name]: e.target.value });
+    const handleEditChange = (e) => setEditingEmployee({ ...editingEmployee, [e.target.name]: e.target.value });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const result = await clientService.addClient(companyId, client);
+        const result = await employeeService.addEmployee(companyId, employee);
         if (result.success) {
             alert(result.message);
-            setClient({ nom: "", adresse: "", email: "", telephone: "", societe: "", type: "client", anciensNoms: [] });
-
-            // SUPPRIMEZ cette partie qui cause le double comptage
-            // setClients(prevClients => [...prevClients, {
-            //    id: result.client.id,
-            //    ...client,
-            //    createdAt: new Date()
-            // }]);
+            setEmployee({
+                nom: "",
+                prenom: "",
+                matricule: "",
+                poste: "",
+                departement: "",
+                dateEmbauche: "",
+                typeContrat: "CDI",
+                salaireBase: 0
+            });
         } else {
             alert(result.message);
         }
     };
-
-    const handleUpdate = async (e) => {
-        e.preventDefault();
-        const result = await clientService.updateClient(companyId, editingClient.id, editingClient);
-        if (result.success) {
-            alert(result.message);
-            cancelEdit();
-        } else {
-            alert(result.message);
-        }
-    };
-
-    const handleDeleteClient = async (clientId) => {
-        if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce client ?")) {
-            return false;
-        }
-
-        try {
-            // 1. Suppression dans Firestore
-            await deleteDoc(doc(db, `companies/${currentUser.companyId}/clients`, clientId));
-
-            // 2. Mise à jour de tous les états concernés
-            setClients(prev => prev.filter(client => client.id !== clientId));
-
-            // 3. Réinitialiser le client sélectionné si c'est celui supprimé
-            if (selectedClient?.id === clientId) {
-                setSelectedClient(null);
-                setClientFactures([]);
-                setClientDevis([]);
-                setClientAvoirs([]);
-            }
-
-            // 4. Feedback utilisateur
-            alert("Client supprimé avec succès");
-            return true;
-
-        } catch (error) {
-            console.error("Erreur suppression client:", error);
-
-            // Gestion d'erreur plus détaillée
-            let errorMessage = "Échec de la suppression du client";
-            if (error.code === "permission-denied") {
-                errorMessage = "Vous n'avez pas les droits pour supprimer ce client";
-            } else if (error.code === "not-found") {
-                errorMessage = "Client déjà supprimé ou introuvable";
-            }
-
-            alert(errorMessage);
-            return false;
-        }
-    };
-
-    const handleEdit = (client) => {
-        setEditingClient({ ...client });
+    const handleEditEmployee = (client) => {
+        setEditingEmployee({ ...client });
         setIsEditing(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    const handleDeleteEmployee = async (employeeId) => {
+        if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet employé ?")) {
+            return false;
+        }
+
+        try {
+            const result = await employeeService.deleteEmployee(companyId, employeeId);
+            if (result.success) {
+                setEmployees(prev => prev.filter(emp => emp.id !== employeeId));
+                alert(result.message);
+                return true;
+            }
+        } catch (error) {
+            console.error("Erreur suppression employé:", error);
+            alert("Échec de la suppression");
+            return false;
+        }
+    };
+
+    const handleUpdateEmployee = async (e) => {    
+        e.preventDefault();
+        const result = await employeeService.updateClient(companyId, editingEmployee.id, editingEmployee);
+        if (result.success) {
+            alert(result.message);
+            cancelEditEmployee();
+        } else {
+            alert(result.message);
+        }
+    };
+    
+
     // Annuler l'édition d'un client
-    const cancelEdit = () => {
-        setEditingClient(null);
+    const cancelEditEmployee = () => {
+        setEditingEmployee(null);
         setIsEditing(false);
     };
+
+
 
     // Handlers équipes
     const handleEquipeChange = (e) => setEquipe({ ...equipe, [e.target.name]: e.target.value });
@@ -387,23 +372,23 @@ const Mentafact = () => {
     };
 
 
-    const handleCreateInvoice = () => {
-        if (!selectedClient) {
-            alert("Veuillez sélectionner un client d'abord");
+  /*  const handleCreateInvoice = () => {
+        if (!selectedEmployee) {
+            alert("Veuillez sélectionner un employee d'abord");
             return;
         }
-        navigate("/bill", { state: { client: selectedClient } });
-    };
+        navigate("/bill", { state: { employee: selectedEmployee } });
+    }; */
 
     /*  const getLastThreeInvoices = () => [...allFactures]
           .sort((a, b) => new Date(b.date) - new Date(a.date))
           .slice(0, 3); */
 
     // Filtres
-    const filteredClients = (clients || []).filter(client =>
-        client.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.societe?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredEmployees = (employees || []).filter(employee =>
+        employee.nom?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        employee.societe?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        employee.email?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const filteredEquipes = equipes.filter(equipe =>
@@ -413,38 +398,38 @@ const Mentafact = () => {
 
     // Déterminer quelles factures afficher selon l'onglet
     const getFacturesToDisplay = () => {
-        if (activeTab === "clients" && selectedClient) {
-            return clientFactures;
+        if (activeTab === "employees" && selectedEmployee) {
+            return employeeFactures;
         }
         return allFactures;
     };
 
-    // Fonction pour charger les factures d'un client sélectionné
-    const loadClientInvoices = (clientId) => {
-        const clientObj = clients.find(c => c.id === clientId);
-        setSelectedClient(clientObj);
+    // Fonction pour charger les factures d'un employee sélectionné
+  /*  const loademployeeInvoices = (employeeId) => {
+        const employeeObj = employees.find(c => c.id === employeeId);
+        setSelectedEmployee(employeeObj);
 
-        // Filtrer les factures, devis et avoirs du client sélectionné
-        setClientFactures(allFactures.filter(f => f.clientId === clientId));
-        setClientDevis(allDevis.filter(d => d.clientId === clientId));
-        setClientAvoirs(allAvoirs.filter(a => a.clientId === clientId));
+        // Filtrer les factures, devis et avoirs du employee sélectionné
+        setemployeeFactures(allFactures.filter(f => f.employeeId === employeeId));
+        setemployeeDevis(allDevis.filter(d => d.employeeId === employeeId));
+        setemployeeAvoirs(allAvoirs.filter(a => a.employeeId === employeeId));
 
-    };
+    }; */
 
     const getDevisToDisplay = () => {
-        if (activeTab === "clients" && selectedClient) {
-            return clientDevis;
+        if (activeTab === "employees" && selectedEmployee) {
+            return employeeDevis;
         }
         return allDevis;
     };
 
     const getAvoirsToDisplay = () => {
-        if (activeTab === "clients" && selectedClient) {
-            return clientAvoirs;
+        if (activeTab === "employees" && selectedEmployee) {
+            return employeeAvoirs;
         }
         return allAvoirs;
     };
-    const handleImportClient = async (e) => {
+ /*   const handleImportemployee = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
@@ -460,41 +445,41 @@ const Mentafact = () => {
             setImportProgress("Conversion des données...");
 
             // 2. Transformer les données
-            const clientsToImport = jsonData.map(row => ({
+            const employeesToImport = jsonData.map(row => ({
                 societe: row['Responsable'] || row['Nom'] || '',
                 nom: row['Raison sociale'] || row['Société'] || '',
                 email: row['Email'] || row['E-mail'] || '',
                 telephone: row['Téléphone'] || row['Phone'] || '',
                 adresse: row['Adresse'] || row['Address'] || '',
                 ville: row['Ville'] || row['City'] || '',
-                type: (row['Type'] || 'client').toLowerCase()
-            })).filter(client => client.nom.trim() !== '');
+                type: (row['Type'] || 'employee').toLowerCase()
+            })).filter(employee => employee.nom.trim() !== '');
 
-            if (clientsToImport.length === 0) {
-                setImportProgress("Aucun client valide trouvé dans le fichier");
+            if (employeesToImport.length === 0) {
+                setImportProgress("Aucun employee valide trouvé dans le fichier");
                 return;
             }
 
-            setImportProgress(`Importation de ${clientsToImport.length} clients...`);
+            setImportProgress(`Importation de ${employeesToImport.length} employees...`);
 
-            // 3. Importer les clients
+            // 3. Importer les employees
             let importedCount = 0;
-            for (const client of clientsToImport) {
+            for (const employee of employeesToImport) {
                 try {
-                    const result = await clientService.addClient(companyId, client);
+                    const result = await employeeService.addemployee(companyId, employee);
                     if (result.success) {
                         importedCount++;
                     }
                 } catch (error) {
-                    console.error("Erreur lors de l'import d'un client:", error);
+                    console.error("Erreur lors de l'import d'un employee:", error);
                 }
             }
 
-            // 4. Mettre à jour la liste des clients
-            //   const updatedClients = await clientService.getClients(companyId);
-            // setClients(updatedClients);
+            // 4. Mettre à jour la liste des employees
+            //   const updatedEmployees = await employeeService.getemployees(companyId);
+            // setemployees(updatedEmployees);
 
-            setImportProgress(`${importedCount}/${clientsToImport.length} clients importés avec succès`);
+            setImportProgress(`${importedCount}/${employeesToImport.length} employees importés avec succès`);
 
         } catch (error) {
             console.error("Erreur lors de l'import:", error);
@@ -503,7 +488,7 @@ const Mentafact = () => {
             // Réinitialiser le champ de fichier
             e.target.value = '';
         }
-    };
+    }; */
 
     const renderActiveTab = () => {
         switch (activeTab) {
@@ -514,34 +499,27 @@ const Mentafact = () => {
                     allDevis={allDevis}
                     allAvoirs={allAvoirs}
                     navigate={navigate}
-                    clients={clients}
+                    employees={employees}
                     currentUser={currentUser} // 👈 Ajoute ça
 
                 />;
-            case "clients":
-                return <ClientsPage
-                    clients={clients}
-                    filteredClients={filteredClients}
+            case "employees":
+                return <EmployeesPage
+                    employees={employees}
+                    filteredEmployees={filteredEmployees}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
-                    selectedClient={selectedClient}
-                    loadClientInvoices={loadClientInvoices}
-                    handleEdit={handleEdit}
-                    handleDelete={handleDeleteClient}
-                    client={client}
+                    selectedEmployee={selectedEmployee}
+                    loadEmployeePayrolls={loadEmployeePayrolls}
+                    handleEdit={handleEditEmployee}
+                    handleDelete={handleDeleteEmployee}
+                    employee={employee}
                     handleChange={handleChange}
                     handleSubmit={handleSubmit}
-                    editingClient={editingClient}
+                    editingEmployee={editingEmployee}
                     handleEditChange={handleEditChange}
-                    handleUpdate={handleUpdate}
-                    cancelEdit={cancelEdit}
-                    societeInput={societeInput}
-                    setSocieteInput={setSocieteInput}
-                    handleSocieteBlur={handleSocieteBlur}
-                    clientFactures={clientFactures}
-                    handleCreateInvoice={handleCreateInvoice}
-                    handleImportClient={handleImportClient} // <-- Ajoutez cette ligne
-                    importProgress={importProgress}
+                    handleUpdate={handleUpdateEmployee}
+                    cancelEdit={cancelEditEmployee}
                 />;
             case "factures":
                 return <InvoicesPage
@@ -554,7 +532,7 @@ const Mentafact = () => {
                     setSearchTerm={setSearchTerm}
                     navigate={navigate}
                     handleDeleteFacture={handleDeleteFacture}
-                    selectedClient={selectedClient}
+                    selectedEmployee={selectedEmployee}
                     companyId={companyId}
 
                 />;
@@ -562,7 +540,7 @@ const Mentafact = () => {
                 return <StatsPage
                     stats={stats}
                     allFactures={allFactures}
-                    clients={clients}
+                    employees={employees}
                     allDevis={allDevis}
                     allAvoirs={allAvoirs}
 
@@ -621,7 +599,7 @@ const Mentafact = () => {
                             <FaSearch className="search-icon" />
                             <input
                                 type="text"
-                                placeholder="Rechercher clients, factures..."
+                                placeholder="Rechercher employees, factures..."
                                 className="search-input"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}

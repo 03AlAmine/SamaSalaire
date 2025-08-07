@@ -1,5 +1,5 @@
-/* Styles améliorés pour la table des clients */
-.clients-table-container {
+/* Styles améliorés pour la table des employees */
+.employees-table-container {
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   overflow: hidden;
@@ -7,14 +7,14 @@
   background: white;
 }
 
-.clients-table {
+.employees-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 0.9rem;
 }
 
-.clients-table th {
+.employees-table th {
   text-align: left;
   padding: 1rem 1.25rem;
   background: linear-gradient(135deg, #4a6fa5 0%,  #ffc107 100%);
@@ -29,38 +29,38 @@
   letter-spacing: 0.5px;
 }
 
-.clients-table th:first-child {
+.employees-table th:first-child {
   border-top-left-radius: 10px;
 }
 
-.clients-table th:last-child {
+.employees-table th:last-child {
   border-top-right-radius: 10px;
 }
 
-.clients-table th:hover {
+.employees-table th:hover {
   background-color: var(--primary-dark);
 }
 
-.clients-table th.active {
+.employees-table th.active {
   background-color: var(--primary-dark);
 }
 
-.clients-table td {
+.employees-table td {
   padding: 1.25rem;
   border-bottom: 1px solid var(--border-light);
   vertical-align: middle;
   transition: var(--transition-fast);
 }
 
-.clients-table tr:last-child td {
+.employees-table tr:last-child td {
   border-bottom: none;
 }
 
-.clients-table tr:hover td {
+.employees-table tr:hover td {
   background-color: rgba(67, 97, 238, 0.05);
 }
 
-.clients-table tr.active td {
+.employees-table tr.active td {
   background-color: rgba(67, 97, 238, 0.08);
 }
 
@@ -75,7 +75,7 @@
   font-size: 0.8rem;
 }
 
-.client-avatar-small {
+.employee-avatar-small {
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -90,18 +90,18 @@
   font-size: 0.9rem;
 }
 
-.client-name {
+.employee-name {
   font-weight: 600;
   color: var(--text-dark);
   margin-bottom: 0.15rem;
 }
 
-.client-company {
+.employee-company {
   font-size: 0.8rem;
   color: var(--gray-medium);
 }
 
-.client-contact div {
+.employee-contact div {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -109,13 +109,13 @@
   font-size: 0.85rem;
 }
 
-.client-contact svg {
+.employee-contact svg {
   color: var(--gray-medium);
   font-size: 0.8rem;
   min-width: 14px;
 }
 
-.client-address {
+.employee-address {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -250,7 +250,7 @@
 }
 
 @media (max-width: 992px) {
-  .clients-table td,
+  .employees-table td,
   .invoice-table td {
     padding: 0.75rem;
   }
@@ -273,22 +273,22 @@
     justify-content: space-between;
   }
 
-  .client-avatar-small {
+  .employee-avatar-small {
     width: 28px;
     height: 28px;
     font-size: 0.8rem;
   }
 
-  .client-name {
+  .employee-name {
     font-size: 0.9rem;
   }
 
-  .client-company {
+  .employee-company {
     font-size: 0.75rem;
   }
 
-  .client-contact div,
-  .client-address {
+  .employee-contact div,
+  .employee-address {
     font-size: 0.8rem;
   }
 
@@ -304,13 +304,13 @@
 }
 
 @media (max-width: 576px) {
-  .clients-table th,
+  .employees-table th,
   .invoice-table th {
     padding: 0.75rem 0.5rem;
     font-size: 0.75rem;
   }
 
-  .clients-table td,
+  .employees-table td,
   .invoice-table td {
     padding: 0.5rem;
     font-size: 0.8rem;
@@ -322,21 +322,21 @@
   }
 }
 /* Ajoutez ces styles à votre CSS */
-.clients-table tr {
+.employees-table tr {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
-.clients-table tr:hover {
+.employees-table tr:hover {
   background-color: rgba(67, 97, 238, 0.05) !important;
 }
 
-.clients-table tr.active {
+.employees-table tr.active {
   background-color: rgba(67, 97, 238, 0.08) !important;
   position: relative;
 }
 
-.clients-table tr.active::after {
+.employees-table tr.active::after {
   content: '';
   position: absolute;
   left: 0;
@@ -344,4 +344,12 @@
   height: 100%;
   width: 3px;
   background-color: var(--primary-color);
+}
+.employee-department {
+  font-size: 0.82rem;
+  color: #718096;
+  background: #f8f9fa;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
 }

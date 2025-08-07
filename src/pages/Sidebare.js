@@ -10,7 +10,7 @@ import { MdDashboard } from 'react-icons/md';
 const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab, logo }) => {
   const menuItems = [
     { icon: <MdDashboard className="nav-icon" />, label: "Tableau de bord", tab: "dashboard" },
-    { icon: <FaUsers className="nav-icon" />, label: "Clients", tab: "clients" },
+    { icon: <FaUsers className="nav-icon" />, label: "Employés", tab: "employees" },
     { icon: <FaFileInvoiceDollar className="nav-icon" />, label: "Ment@Fact", tab: "factures" },
     { icon: <FaChartBar className="nav-icon" />, label: "Statistiques", tab: "stats" },
     { icon: <FaUsers className="nav-icon" />, label: "Équipes", tab: "equipes" }
@@ -24,8 +24,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab, logo })
         className="sidebar-header"
         style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: 'inherit' }}
       >
-        <img src={logo} alt="Logo Sam@Fact" style={{ height: '50px' }} />
-          {sidebarOpen && <h2 style={{ margin: 0 }}>SamaF@ct</h2>}
+        <img src={logo} alt="Logo Sam@Salaire" style={{ height: '50px' }} />
+        {sidebarOpen && <h2 style={{ margin: 0 }}>SamaSalaire</h2>}
       </Link>
 
       <nav className="sidebar-nav">

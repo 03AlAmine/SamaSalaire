@@ -7,13 +7,13 @@ import { getStorage } from "firebase/storage";
 
 // Configuration Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDYEz7Kz_H9Q57qnpFnP6lebW12rFkT180",
-  authDomain: "mentafact.firebaseapp.com",
-  projectId: "mentafact",
-  storageBucket: "mentafact.firebasestorage.app",
-  messagingSenderId: "927707293074",
-  appId: "1:927707293074:web:0d1622176bec28e948cd4b",
-  measurementId: "G-8PBFXDJNBC"
+  apiKey: "AIzaSyBctTjsOKdhBjCTgd-0-uv6mPD_xJylZdE",
+  authDomain: "samasalaire.firebaseapp.com",
+  projectId: "samasalaire",
+  storageBucket: "samasalaire.firebasestorage.app",
+  messagingSenderId: "1076884780088",
+  appId: "1:1076884780088:web:277b10a9627f37105de2cd",
+  measurementId: "G-2MX7E45SN5"
 };
 
 // Initialisation Firebase
