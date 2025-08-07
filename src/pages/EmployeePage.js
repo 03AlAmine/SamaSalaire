@@ -105,7 +105,31 @@ const EmployeesPage = ({
               />
             </div>
           </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="edit-adresse" className="form-label">Adresse <span className="required">*</span></label>
+              <input
+                id="edit-adresse"
+                name="adresse"
+                value={editingEmployee.adresse}
+                onChange={handleEditChange}
+                required
+                className="form-input"
+              />
+            </div>
 
+            <div className="form-group">
+              <label htmlFor="edit-categorie" className="form-label">Catégorie <span className="required">*</span></label>
+              <input
+                id="edit-categorie"
+                name="categorie"
+                value={editingEmployee.categorie}
+                onChange={handleEditChange}
+                required
+                className="form-input"
+              />
+            </div>
+          </div>
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="edit-poste" className="form-label">Poste <span className="required">*</span></label>
@@ -233,7 +257,31 @@ const EmployeesPage = ({
                 />
               </div>
             </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="adresse" className="form-label">Adresse <span className="required">*</span></label>
+                <input
+                  id="adresse"
+                  name="adresse"
+                  value={employee.adresse}
+                  onChange={handleChange}
+                  required
+                  className="form-input"
+                />
+              </div>
 
+              <div className="form-group">
+                <label htmlFor="categorie" className="form-label">Catégorie <span className="required">*</span></label>
+                <input
+                  id="categorie"
+                  name="categorie"
+                  value={employee.categorie}
+                  onChange={handleChange}
+                  required
+                  className="form-input"
+                />
+              </div>
+            </div>
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="poste" className="form-label">Poste <span className="required">*</span></label>
