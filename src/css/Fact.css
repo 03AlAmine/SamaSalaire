@@ -376,13 +376,22 @@
   box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(0, 0, 0, 0.03);
 }
-
-.button-group {
+.button-group-two {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   gap: 1.2rem;
   margin-top: 2rem;
   flex-wrap: wrap;
+}
+
+.button-group-two a {
+  flex: 1; /* prend tout l'espace disponible */
+}
+.button-group-two a button {
+  width: 100%;
+}
+.button-group-two button {
+  flex: 1; /* prend tout l'espace disponible */
 }
 
 /* Empty State */
@@ -439,7 +448,7 @@
     padding: 1.5rem;
   }
 
-  .button-group {
+  .button-group-two {
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;

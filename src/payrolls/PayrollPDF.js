@@ -1,281 +1,214 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet } from '@react-pdf/renderer';
+import { Page, Text, View, Document, Image } from '@react-pdf/renderer';
+import sign from '../assets/sign.png'; // Assurez-vous d'avoir cette image
+import n2words from 'n2words';
+import { styles } from './styles'; // Import des styles depuis le fichier styles.js 
 
-const styles = StyleSheet.create({
-    page: {
-        padding: 30,
-        fontFamily: 'Helvetica'
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 20,
-        borderBottom: 1,
-        paddingBottom: 10
-    },
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20
-    },
-    section: {
-        marginBottom: 15
-    },
-    sectionTitle: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        marginBottom: 5,
-        backgroundColor: '#f0f0f0',
-        padding: 5
-    },
-    row: {
-        flexDirection: 'row',
-        marginBottom: 5
-    },
-    label: {
-        width: '40%',
-        fontWeight: 'bold'
-    },
-    value: {
-        width: '60%'
-    },
-    table: {
-        marginTop: 10,
-        width: '100%'
-    },
-    tableRow: {
-        flexDirection: 'row',
-        borderBottom: 1,
-        borderColor: '#eeeeee',
-        padding: 5
-    },
-    tableHeader: {
-        backgroundColor: '#f0f0f0',
-        fontWeight: 'bold'
-    },
-    tableCol: {
-        width: '25%'
-    },
-    totalRow: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        marginTop: 10
-    },
-    totalLabel: {
-        width: '70%',
-        textAlign: 'right',
-        paddingRight: 10,
-        fontWeight: 'bold'
-    },
-    totalValue: {
-        width: '30%',
-        textAlign: 'right'
-    },
-    signature: {
-        marginTop: 40,
-        flexDirection: 'row',
-        justifyContent: 'space-between'
-    },
-    footer: {
-        marginTop: 30,
-        fontSize: 10,
-        textAlign: 'center',
-        color: '#666666'
-    }
-});
-
-const PayrollPDF = ({ employee, formData, calculations, companyInfo }) => {
+const PayrollPDF = ({ employee = {}, formData = {}, calculations = {}, companyInfo = {} }) => {
+    // Formatage des dates
     const formatDate = (dateString) => {
+        if (!dateString) return '';
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('fr-FR', options);
     };
-
     const formatCurrency = (value) => {
-        return new Intl.NumberFormat('fr-FR', {
-            style: 'currency',
-            currency: 'XOF',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(value);
+        const numericValue = parseFloat(value) || 0;
+        // Solution 1: simple replace
+        return `${numericValue.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, " ")} FCFA`;
     };
 
+
+    // Conversion du montant en lettres
+    const amountInWords = (amount) => {
+        const numericAmount = parseFloat(amount) || 0;
+        const roundedAmount = Math.round(numericAmount);
+        try {
+            return n2words(roundedAmount, { lang: 'fr' }) + ' francs CFA';
+        } catch (error) {
+            console.error("Erreur conversion montant en lettres:", error);
+            return "Montant non convertible";
+        }
+    };
     return (
         <Document>
             <Page size="A4" style={styles.page}>
+                {/* Watermark */}
+                <Image
+                    style={styles.watermark}
+                    src="./Logo_LIS.png" // Remplacez par le chemin correct
+                />
+
+                {/* Header */}
                 <View style={styles.header}>
                     <View>
-                        <Text>{companyInfo.name}</Text>
-                        <Text>{companyInfo.address}</Text>
-                        <Text>Tél: {companyInfo.phone}</Text>
-                        <Text>Email: {companyInfo.email}</Text>
+                        {companyInfo.logo && (
+                            <Image src={companyInfo.logo} style={styles.companyLogo} />
+                        )}
+                        <Text style={styles.companyInfo}>
+                            {companyInfo.name}{'\n'}
+                            {companyInfo.address}{'\n'}
+                            Tél: {companyInfo.phone}{'\n'}
+                            Email: {companyInfo.email}{'\n'}
+                            RC: {companyInfo.rc} - NINEA: {companyInfo.ninea}
+                        </Text>
+                    </View>
+                    <View style={styles.titleContainer}>
+                        <Text style={styles.title}>BULLETIN DE PAIE</Text>
+                        <Text style={styles.subtitle}>
+                            Période du {formatDate(formData.periode.du)} au {formatDate(formData.periode.au)}
+                        </Text>
+                        <Text style={styles.subtitle}>Matricule: {employee.matricule}</Text>
+                    </View>
+                </View>
+
+                {/* Employee Info */}
+                <View style={styles.employeeInfo}>
+                    <View>
+                        <Text style={{ fontWeight: 'bold' }}>Nom: {employee.nom} {employee.prenom}</Text>
+                        <Text>Poste: {employee.poste}</Text>
                     </View>
                     <View>
-                        <Text>BULLETIN DE SALAIRE</Text>
-                        <Text>Période: {formatDate(formData.periode.du)} au {formatDate(formData.periode.au)}</Text>
+                        <Text>Date embauche: {formatDate(employee.dateEmbauche)}</Text>
+                        <Text>Contrat: {employee.typeContrat}</Text>
                     </View>
                 </View>
 
+                {/* Gains */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Informations Employé</Text>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Nom:</Text>
-                        <Text style={styles.value}>{employee.nom}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Prénom:</Text>
-                        <Text style={styles.value}>{employee.prenom}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Poste:</Text>
-                        <Text style={styles.value}>{employee.poste}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Matricule:</Text>
-                        <Text style={styles.value}>{employee.matricule}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Date d'embauche:</Text>
-                        <Text style={styles.value}>{formatDate(employee.dateEmbauche)}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Catégorie:</Text>
-                        <Text style={styles.value}>{employee.categorie}</Text>
-                    </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Type de contrat:</Text>
-                        <Text style={styles.value}>{employee.typeContrat}</Text>
-                    </View>
-                </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Rémunération</Text>
+                    <Text style={styles.sectionTitle}>GAINS</Text>
                     <View style={styles.table}>
                         <View style={[styles.tableRow, styles.tableHeader]}>
                             <Text style={styles.tableCol}>Libellé</Text>
-                            <Text style={styles.tableCol}>Montant (XOF)</Text>
+                            <Text style={styles.tableColAmount}>Montant (XOF)</Text>
                         </View>
                         <View style={styles.tableRow}>
                             <Text style={styles.tableCol}>Salaire de base</Text>
-                            <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.remuneration.salaireBase))}</Text>
+                            <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.remuneration.salaireBase))}</Text>
                         </View>
                         {parseFloat(formData.remuneration.sursalaire) > 0 && (
                             <View style={styles.tableRow}>
                                 <Text style={styles.tableCol}>Sursalaire</Text>
-                                <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.remuneration.sursalaire))}</Text>
+                                <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.remuneration.sursalaire))}</Text>
                             </View>
                         )}
                         {parseFloat(formData.remuneration.indemniteDeplacement) > 0 && (
                             <View style={styles.tableRow}>
                                 <Text style={styles.tableCol}>Indemnité de déplacement</Text>
-                                <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.remuneration.indemniteDeplacement))}</Text>
+                                <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.remuneration.indemniteDeplacement))}</Text>
                             </View>
                         )}
                         {parseFloat(formData.remuneration.autresIndemnites) > 0 && (
                             <View style={styles.tableRow}>
                                 <Text style={styles.tableCol}>Autres indemnités</Text>
-                                <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.remuneration.autresIndemnites))}</Text>
+                                <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.remuneration.autresIndemnites))}</Text>
                             </View>
                         )}
                         {parseFloat(formData.remuneration.avantagesNature) > 0 && (
                             <View style={styles.tableRow}>
                                 <Text style={styles.tableCol}>Avantages en nature</Text>
-                                <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.remuneration.avantagesNature))}</Text>
+                                <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.remuneration.avantagesNature))}</Text>
+                            </View>
+                        )}
+                        <View style={[styles.tableRow, styles.tableHeader]}>
+                            <Text style={styles.tableCol}>Total Gains</Text>
+                            <Text style={styles.tableColAmount}>{formatCurrency(calculations.brutSocial)}</Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Primes */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>PRIMES ET INDEMNITES</Text>
+                    <View style={styles.table}>
+                        <View style={styles.tableRow}>
+                            <Text style={styles.tableCol}>Indemnité de transport</Text>
+                            <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.primes.transport))}</Text>
+                        </View>
+                        <View style={styles.tableRow}>
+                            <Text style={styles.tableCol}>Prime de panier</Text>
+                            <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.primes.panier))}</Text>
+                        </View>
+                        <View style={styles.tableRow}>
+                            <Text style={styles.tableCol}>Indemnité de responsabilité</Text>
+                            <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.primes.responsabilite))}</Text>
+                        </View>
+                        {parseFloat(formData.primes.autresPrimes) > 0 && (
+                            <View style={styles.tableRow}>
+                                <Text style={styles.tableCol}>Autres primes</Text>
+                                <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.primes.autresPrimes))}</Text>
                             </View>
                         )}
                     </View>
                 </View>
 
+                {/* Retenues */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Primes et Indemnités</Text>
+                    <Text style={styles.sectionTitle}>RETENUES</Text>
                     <View style={styles.table}>
-                        <View style={[styles.tableRow, styles.tableHeader]}>
-                            <Text style={styles.tableCol}>Libellé</Text>
-                            <Text style={styles.tableCol}>Montant (XOF)</Text>
-                        </View>
                         <View style={styles.tableRow}>
-                            <Text style={styles.tableCol}>Indemnité de transport</Text>
-                            <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.primes.transport))}</Text>
-                        </View>
-                        <View style={styles.tableRow}>
-                            <Text style={styles.tableCol}>Prime de panier</Text>
-                            <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.primes.panier))}</Text>
-                        </View>
-                        <View style={styles.tableRow}>
-                            <Text style={styles.tableCol}>Indemnité de responsabilité</Text>
-                            <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.primes.responsabilite))}</Text>
-                        </View>
-                        <View style={styles.tableRow}>
-                            <Text style={styles.tableCol}>Autres primes</Text>
-                            <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.primes.autresPrimes))}</Text>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Retenues</Text>
-                    <View style={styles.table}>
-                        <View style={[styles.tableRow, styles.tableHeader]}>
-                            <Text style={styles.tableCol}>Libellé</Text>
-                            <Text style={styles.tableCol}>Montant (XOF)</Text>
-                        </View>
-                        <View style={styles.tableRow}>
-                            <Text style={styles.tableCol}>Retenue IPM</Text>
-                            <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.retenues.ipm))}</Text>
-                        </View>
-                        <View style={styles.tableRow}>
-                            <Text style={styles.tableCol}>Avances</Text>
-                            <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.retenues.avances))}</Text>
+                            <Text style={styles.tableCol}>Cotisations sociales (IPM)</Text>
+                            <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.retenues.ipm))}</Text>
                         </View>
                         <View style={styles.tableRow}>
                             <Text style={styles.tableCol}>TRIMF</Text>
-                            <Text style={styles.tableCol}>{formatCurrency(parseFloat(formData.retenues.trimf))}</Text>
+                            <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.retenues.trimf))}</Text>
+                        </View>
+                        {parseFloat(formData.retenues.avances) > 0 && (
+                            <View style={styles.tableRow}>
+                                <Text style={styles.tableCol}>Avances</Text>
+                                <Text style={styles.tableColAmount}>{formatCurrency(parseFloat(formData.retenues.avances))}</Text>
+                            </View>
+                        )}
+                        <View style={[styles.tableRow, styles.tableHeader]}>
+                            <Text style={styles.tableCol}>Total Retenues</Text>
+                            <Text style={styles.tableColAmount}>{formatCurrency(calculations.cotisationsSalariales)}</Text>
                         </View>
                     </View>
                 </View>
 
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Calculs</Text>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Brut Social:</Text>
-                        <Text style={styles.value}>{formatCurrency(calculations.brutSocial)}</Text>
+                {/* Totaux */}
+                <View style={styles.totalSection}>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Salaire Brut:</Text>
+                        <Text>{formatCurrency(calculations.brutFiscal)}</Text>
                     </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Brut Fiscal:</Text>
-                        <Text style={styles.value}>{formatCurrency(calculations.brutFiscal)}</Text>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Cotisations salariales:</Text>
+                        <Text>- {formatCurrency(calculations.cotisationsSalariales)}</Text>
                     </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Cotisations Salariales:</Text>
-                        <Text style={styles.value}>{formatCurrency(calculations.cotisationsSalariales)}</Text>
+                    <View style={styles.totalRow}>
+                        <Text style={styles.totalLabel}>Cotisations patronales:</Text>
+                        <Text>- {formatCurrency(calculations.cotisationsPatronales)}</Text>
                     </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Cotisations Patronales:</Text>
-                        <Text style={styles.value}>{formatCurrency(calculations.cotisationsPatronales)}</Text>
+                    <View style={[styles.totalRow, { marginTop: 10 }]}>
+                        <Text style={[styles.totalLabel, styles.netPay]}>NET A PAYER:</Text>
+                        <Text style={styles.netPay}>{formatCurrency(calculations.salaireNetAPayer)}</Text>
                     </View>
-                    <View style={styles.row}>
-                        <Text style={styles.label}>Salaire Net:</Text>
-                        <Text style={styles.value}>{formatCurrency(calculations.salaireNet)}</Text>
+                    <Text style={styles.amountInWords}>
+                        Arrêté le présent bulletin à la somme de: {amountInWords(calculations.salaireNetAPayer)} francs CFA
+                    </Text>
+                </View>
+
+                {/* Signature */}
+                <View style={styles.signatureContainer}>
+                    <View>
+                        <Image
+                            style={styles.signatureImage}
+                            src={sign}
+                        />
+                        <Text style={styles.signatureLine}>Signature employeur</Text>
                     </View>
-                    <View style={[styles.row, { backgroundColor: '#f0f0f0', padding: 5 }]}>
-                        <Text style={[styles.label, { fontWeight: 'bold' }]}>Salaire Net à Payer:</Text>
-                        <Text style={[styles.value, { fontWeight: 'bold' }]}>{formatCurrency(calculations.salaireNetAPayer)}</Text>
+                    <View>
+                        <Text style={styles.signatureLine}>Signature employé</Text>
                     </View>
                 </View>
 
-                <View style={styles.signature}>
-                    <View>
-                        <Text>L'Employeur</Text>
-                        <Text>_________________________</Text>
-                    </View>
-                    <View>
-                        <Text>L'Employé</Text>
-                        <Text>_________________________</Text>
-                    </View>
-                </View>
-
+                {/* Footer */}
                 <View style={styles.footer}>
-                    <Text>{companyInfo.name} - RC: {companyInfo.rc} - NINEA: {companyInfo.ninea}</Text>
-                    <Text>Tél: {companyInfo.phone} - Email: {companyInfo.email}</Text>
+                    <Text style={styles.footerBold}>LEADER INTERIM ET SERVICES</Text>
+                    <Text>RC: SN 2015 B24288 | NINEA: 0057262212 A2</Text>
+                    <Text>Téléphone: 33 820 88 46 | Email: infos@leaderinterime.com</Text>
+                    <Text>Bulletin généré le {formatDate(new Date().toISOString())}</Text>
                 </View>
             </Page>
         </Document>
