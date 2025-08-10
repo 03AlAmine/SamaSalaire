@@ -5,6 +5,7 @@ import { useAuth } from './auth/AuthContext';
 import { FaBell, FaUserCircle, FaCog, FaSignOutAlt, FaChevronDown, FaCreditCard, FaUser, FaSearch, FaChevronRight } from 'react-icons/fa';
 import { employeeService } from "./services/employeeService";
 import { invoiceService } from "./services/invoiceService";
+import { payrollService } from "./services/payrollService";
 import { teamService } from "./services/teamService";
 import { getDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
@@ -12,6 +13,7 @@ import { db } from "./firebase";
 import DashboardPage from "./pages/DashboardPage";
 import InvoicesPage from "./pages/InvoicesPage";
 import EmployeesPage from "./pages/EmployeePage";
+import PayrollsPage from "./pages/PayrollsPage";
 import StatsPage from "./pages/StatsPage";
 import TeamsPage from "./pages/TeamsPage";
 import Sidebar from "./pages/Sidebare";
@@ -34,7 +36,7 @@ const Mentafact = () => {
     const [activeTab_0, setActiveTab_0] = useState("factures");
     // eslint-disable-next-line no-unused-vars
     const [error, setError] = useState(null);
-   // const [, setImportProgress] = useState(""); // Ajouté pour l'import de employees
+    // const [, setImportProgress] = useState(""); // Ajouté pour l'import de employees
 
     const [employee, setEmployee] = useState({
         nom: "",
@@ -54,11 +56,13 @@ const Mentafact = () => {
     const [isEditing, setIsEditing] = useState(false);
 
     const [allFactures, setAllFactures] = useState([]);
-    const [employeeFactures, ] = useState([]);
+    const [employeeFactures,] = useState([]);
     const [allDevis, setAllDevis] = useState([]);
-    const [employeeDevis, ] = useState([]);
+    const [employeeDevis,] = useState([]);
     const [allAvoirs, setAllAvoirs] = useState([]);
-    const [employeeAvoirs, ] = useState([]);
+    const [employeeAvoirs,] = useState([]);
+
+    const [payrolls, setPayrolls] = useState([]);
 
     const [equipe, setEquipe] = useState({ nom: "", description: "", responsable: "" });
     const [equipes, setEquipes] = useState([]);
@@ -68,6 +72,7 @@ const Mentafact = () => {
 
     const [stats, setStats] = useState({
         totalemployees: 0,
+        totalpayrolls: 0,
         totalFactures: 0,
         revenusMensuels: 0,
         facturesImpayees: 0,
@@ -119,6 +124,15 @@ const Mentafact = () => {
                 }));
             });
             if (typeof employeesUnsub === "function") unsubscribers.push(employeesUnsub);
+
+            const payrollsUnsub = payrollService.getPayrolls(companyId, (payrollsData) => {
+                setPayrolls(payrollsData); // Correction ici - utiliser setPayrolls au lieu de setEmployees
+                setStats(prev => ({
+                    ...prev,
+                    totalPayrolls: payrollsData.length
+                }));
+            });
+            if (typeof payrollsUnsub === "function") unsubscribers.push(payrollsUnsub);
 
             const invoicesUnsub = invoiceService.getInvoices(companyId, "facture", (invoicesData) => {
                 let filteredFactures = invoicesData;
@@ -264,7 +278,7 @@ const Mentafact = () => {
         }
     };
 
-    const handleUpdateEmployee = async (e) => {    
+    const handleUpdateEmployee = async (e) => {
         e.preventDefault();
         const result = await employeeService.updateClient(companyId, editingEmployee.id, editingEmployee);
         if (result.success) {
@@ -274,7 +288,7 @@ const Mentafact = () => {
             alert(result.message);
         }
     };
-    
+
 
     // Annuler l'édition d'un client
     const cancelEditEmployee = () => {
@@ -372,13 +386,13 @@ const Mentafact = () => {
     };
 
 
-  /*  const handleCreateInvoice = () => {
-        if (!selectedEmployee) {
-            alert("Veuillez sélectionner un employee d'abord");
-            return;
-        }
-        navigate("/bill", { state: { employee: selectedEmployee } });
-    }; */
+    /*  const handleCreateInvoice = () => {
+          if (!selectedEmployee) {
+              alert("Veuillez sélectionner un employee d'abord");
+              return;
+          }
+          navigate("/bill", { state: { employee: selectedEmployee } });
+      }; */
 
     /*  const getLastThreeInvoices = () => [...allFactures]
           .sort((a, b) => new Date(b.date) - new Date(a.date))
@@ -405,16 +419,16 @@ const Mentafact = () => {
     };
 
     // Fonction pour charger les factures d'un employee sélectionné
-  /*  const loademployeeInvoices = (employeeId) => {
-        const employeeObj = employees.find(c => c.id === employeeId);
-        setSelectedEmployee(employeeObj);
-
-        // Filtrer les factures, devis et avoirs du employee sélectionné
-        setemployeeFactures(allFactures.filter(f => f.employeeId === employeeId));
-        setemployeeDevis(allDevis.filter(d => d.employeeId === employeeId));
-        setemployeeAvoirs(allAvoirs.filter(a => a.employeeId === employeeId));
-
-    }; */
+    /*  const loademployeeInvoices = (employeeId) => {
+          const employeeObj = employees.find(c => c.id === employeeId);
+          setSelectedEmployee(employeeObj);
+  
+          // Filtrer les factures, devis et avoirs du employee sélectionné
+          setemployeeFactures(allFactures.filter(f => f.employeeId === employeeId));
+          setemployeeDevis(allDevis.filter(d => d.employeeId === employeeId));
+          setemployeeAvoirs(allAvoirs.filter(a => a.employeeId === employeeId));
+  
+      }; */
 
     const getDevisToDisplay = () => {
         if (activeTab === "employees" && selectedEmployee) {
@@ -429,66 +443,66 @@ const Mentafact = () => {
         }
         return allAvoirs;
     };
- /*   const handleImportemployee = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        setImportProgress("Début de l'import...");
-
-        try {
-            // 1. Lire le fichier Excel
-            const data = await file.arrayBuffer();
-            const workbook = XLSX.read(data);
-            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-            setImportProgress("Conversion des données...");
-
-            // 2. Transformer les données
-            const employeesToImport = jsonData.map(row => ({
-                societe: row['Responsable'] || row['Nom'] || '',
-                nom: row['Raison sociale'] || row['Société'] || '',
-                email: row['Email'] || row['E-mail'] || '',
-                telephone: row['Téléphone'] || row['Phone'] || '',
-                adresse: row['Adresse'] || row['Address'] || '',
-                ville: row['Ville'] || row['City'] || '',
-                type: (row['Type'] || 'employee').toLowerCase()
-            })).filter(employee => employee.nom.trim() !== '');
-
-            if (employeesToImport.length === 0) {
-                setImportProgress("Aucun employee valide trouvé dans le fichier");
-                return;
-            }
-
-            setImportProgress(`Importation de ${employeesToImport.length} employees...`);
-
-            // 3. Importer les employees
-            let importedCount = 0;
-            for (const employee of employeesToImport) {
-                try {
-                    const result = await employeeService.addemployee(companyId, employee);
-                    if (result.success) {
-                        importedCount++;
-                    }
-                } catch (error) {
-                    console.error("Erreur lors de l'import d'un employee:", error);
-                }
-            }
-
-            // 4. Mettre à jour la liste des employees
-            //   const updatedEmployees = await employeeService.getemployees(companyId);
-            // setemployees(updatedEmployees);
-
-            setImportProgress(`${importedCount}/${employeesToImport.length} employees importés avec succès`);
-
-        } catch (error) {
-            console.error("Erreur lors de l'import:", error);
-            setImportProgress("Erreur lors de l'import: " + error.message);
-        } finally {
-            // Réinitialiser le champ de fichier
-            e.target.value = '';
-        }
-    }; */
+    /*   const handleImportemployee = async (e) => {
+           const file = e.target.files[0];
+           if (!file) return;
+   
+           setImportProgress("Début de l'import...");
+   
+           try {
+               // 1. Lire le fichier Excel
+               const data = await file.arrayBuffer();
+               const workbook = XLSX.read(data);
+               const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+               const jsonData = XLSX.utils.sheet_to_json(worksheet);
+   
+               setImportProgress("Conversion des données...");
+   
+               // 2. Transformer les données
+               const employeesToImport = jsonData.map(row => ({
+                   societe: row['Responsable'] || row['Nom'] || '',
+                   nom: row['Raison sociale'] || row['Société'] || '',
+                   email: row['Email'] || row['E-mail'] || '',
+                   telephone: row['Téléphone'] || row['Phone'] || '',
+                   adresse: row['Adresse'] || row['Address'] || '',
+                   ville: row['Ville'] || row['City'] || '',
+                   type: (row['Type'] || 'employee').toLowerCase()
+               })).filter(employee => employee.nom.trim() !== '');
+   
+               if (employeesToImport.length === 0) {
+                   setImportProgress("Aucun employee valide trouvé dans le fichier");
+                   return;
+               }
+   
+               setImportProgress(`Importation de ${employeesToImport.length} employees...`);
+   
+               // 3. Importer les employees
+               let importedCount = 0;
+               for (const employee of employeesToImport) {
+                   try {
+                       const result = await employeeService.addemployee(companyId, employee);
+                       if (result.success) {
+                           importedCount++;
+                       }
+                   } catch (error) {
+                       console.error("Erreur lors de l'import d'un employee:", error);
+                   }
+               }
+   
+               // 4. Mettre à jour la liste des employees
+               //   const updatedEmployees = await employeeService.getemployees(companyId);
+               // setemployees(updatedEmployees);
+   
+               setImportProgress(`${importedCount}/${employeesToImport.length} employees importés avec succès`);
+   
+           } catch (error) {
+               console.error("Erreur lors de l'import:", error);
+               setImportProgress("Erreur lors de l'import: " + error.message);
+           } finally {
+               // Réinitialiser le champ de fichier
+               e.target.value = '';
+           }
+       }; */
 
     const renderActiveTab = () => {
         switch (activeTab) {
@@ -500,6 +514,7 @@ const Mentafact = () => {
                     allAvoirs={allAvoirs}
                     navigate={navigate}
                     employees={employees}
+                    payrolls={payrolls}
                     currentUser={currentUser} // 👈 Ajoute ça
 
                 />;
@@ -535,6 +550,13 @@ const Mentafact = () => {
                     selectedEmployee={selectedEmployee}
                     companyId={companyId}
 
+                />;
+            case "payrolls":
+                return <PayrollsPage
+                    payrolls={payrolls}
+                    employees={employees}
+                    selectedEmployee={selectedEmployee}
+                    companyId={companyId}
                 />;
             case "stats":
                 return <StatsPage

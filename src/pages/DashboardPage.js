@@ -3,7 +3,7 @@ import { FaUsers, FaFileInvoiceDollar, FaPlus, FaBolt, FaUserPlus, FaFileImport 
 import { InvoiceChart, EmployeChart } from "../components/Charts";
 import { DocumentSliderCard, MonthlyAmountSliderCard, PaymentStatusSliderCard } from '../components/DocumentSliderCard'; // ou directement dans le fichier
 
-const DashboardPage = ({ stats, allFactures, allDevis, allAvoirs, navigate, employees }) => {
+const DashboardPage = ({ stats, allFactures, allDevis, allAvoirs, navigate, employees, payrolls }) => {
     const [activeSlide, setActiveSlide] = useState("factures");
 
     const getLastThreeItems = (items) => [...items]
@@ -28,6 +28,15 @@ const DashboardPage = ({ stats, allFactures, allDevis, allAvoirs, navigate, empl
                     <div className="stat-info">
                         <h3>{stats.totalEmployees}</h3>
                         <p>Employees</p>
+                    </div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-icon employees">
+                        <FaUsers />
+                    </div>
+                    <div className="stat-info">
+                        <h3>{stats.totalPayrolls}</h3>
+                        <p>Payroll</p>
                     </div>
                 </div>
                 <DocumentSliderCard stats={stats} />

@@ -4,6 +4,8 @@ import {
   FaUsers,
   FaFileInvoiceDollar,
   FaChartBar,
+  FaMoneyBillWave,
+
 } from 'react-icons/fa';
 import { MdDashboard } from 'react-icons/md';
 
@@ -12,6 +14,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, activeTab, setActiveTab, logo })
     { icon: <MdDashboard className="nav-icon" />, label: "Tableau de bord", tab: "dashboard" },
     { icon: <FaUsers className="nav-icon" />, label: "Employés", tab: "employees" },
     { icon: <FaFileInvoiceDollar className="nav-icon" />, label: "Ment@Fact", tab: "factures" },
+    { icon: <FaMoneyBillWave className="nav-icon" />, label: "Ment@Roll", tab: "payrolls" },
     { icon: <FaChartBar className="nav-icon" />, label: "Statistiques", tab: "stats" },
     { icon: <FaUsers className="nav-icon" />, label: "Équipes", tab: "equipes" }
   ];

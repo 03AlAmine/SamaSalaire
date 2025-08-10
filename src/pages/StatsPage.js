@@ -24,6 +24,16 @@ const StatsPage = ({ stats, allFactures, allAvoirs, allDevis, employees }) => {
                         <div className="stat-trend up">+12% ce mois-ci</div>
                     </div>
                 </div>
+                <div className="stat-card large">
+                    <div className="stat-icon employees">
+                        <FaUsers />
+                    </div>
+                    <div className="stat-info">
+                        <h3>{stats.totalPayrolls}</h3>
+                        <p>Payroll enregistrés</p>
+                        <div className="stat-trend up">+12% ce mois-ci</div>
+                    </div>
+                </div>
                 <DocumentSliderCard stats={stats} className="large" showTrend={true} showName={false}
 
                 />
